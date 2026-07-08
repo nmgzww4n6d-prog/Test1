@@ -1,0 +1,9 @@
+# Kjerneavhengigheter for MVP-en
+pandas>=2.0
+PyYAML>=6.0
+python-dotenv>=1.0
+
+# TODO (fremtidige integrasjoner – ikke nødvendig for MVP):
+# google-analytics-data      # GA4 Data API
+# google-api-python-client   # Search Console API
+# requests                   # Semrush / WordPress / Slack webhook

@@ -1,0 +1,69 @@
+# =============================================================================
+# Konfigurasjon for SEO & Content Opportunity Agent
+# =============================================================================
+# Denne filen styrer hvordan agenten prioriterer og tolker data.
+# Rediger verdiene under slik at de passer klinikken. Ingen API-nøkler her –
+# de hører hjemme i .env (se .env.example).
+# -----------------------------------------------------------------------------
+
+klinikknavn: "Eksempel Fertilitetsklinikk"
+
+# Nettstedets domene (brukes kun til kontekst i rapporten foreløpig).
+domene: "https://eksempel-klinikk.no"
+
+# Tjenester vi ønsker å prioritere kommersielt. Agenten vekter muligheter
+# som treffer disse temaene høyere.
+prioriterte_tjenester:
+  - "IVF"
+  - "ICSI"
+  - "eggdonasjon"
+  - "sæddonasjon"
+  - "fertilitetsutredning"
+  - "nedfrysing av egg"
+  - "inseminasjon (IUI)"
+
+# Geografiske markeder vi vil være synlige i.
+prioriterte_byer:
+  - "Oslo"
+  - "Bergen"
+  - "Trondheim"
+  - "Stavanger"
+
+# Kommersielle mål – brukes som kontekst i rapportens executive summary.
+kommersielle_mal:
+  - "Øke antall kvalifiserte konsultasjonsforespørsler"
+  - "Styrke organisk synlighet på tjenestesider"
+  - "Bygge autoritet gjennom faglig innhold"
+
+# Medisinske temaer som ALLTID krever ekstra kvalitetssikring (YMYL / helse).
+# Muligheter som berører disse flagges for menneskelig/medisinsk godkjenning.
+medisinske_temaer_som_krever_godkjenning:
+  - "suksessrate"
+  - "sjanse"
+  - "graviditet"
+  - "medisin"
+  - "hormon"
+  - "bivirkning"
+  - "risiko"
+  - "alder"
+  - "juridisk"
+  - "diagnose"
+
+# -----------------------------------------------------------------------------
+# Terskelverdier for muligheter. Justér etter behov.
+# -----------------------------------------------------------------------------
+terskler:
+  # "Striking distance": søkeord/sider som ligger like utenfor topp-plasseringene
+  # og som ofte gir raske gevinster.
+  striking_distance_min_posisjon: 4.0
+  striking_distance_max_posisjon: 20.0
+
+  # Sider med mange visninger men lav klikkrate = tittel/meta-mulighet.
+  lav_ctr_terskel: 0.02          # 2 %
+  min_visninger_for_ctr: 100     # ignorér støy fra sider med få visninger
+
+  # Konvertering / engasjement.
+  lav_engasjementsrate: 0.40     # 40 %
+
+  # Minste søkevolum før et søkeord regnes som en mulighet.
+  min_sokevolum: 50

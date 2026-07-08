@@ -1,0 +1,23 @@
+# Miljø / hemmeligheter
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+
+# Data og genererte rapporter (behold mappene, ikke innholdet)
+data/input/*
+data/output/*
+reports/*
+!**/.gitkeep
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
