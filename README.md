@@ -3,9 +3,12 @@
 Et lokalt proof-of-concept for et AI Marketing Agent-system for en
 IVF/fertilitetsklinikk. Første versjon inneholder **én** agent:
 
-> **SEO & Content Opportunity Agent** – leser CSV-eksporter, finner SEO- og
-> innholdsmuligheter, prioriterer dem etter Impact/Effort/Confidence, og skriver
-> en strukturert Markdown-rapport.
+> **SEO & Content Opportunity Agent** – leser CSV-eksporter og resonnerer som en
+> senior digital markedsfører: finner sidene med størst kommersielt potensial,
+> prioriterer tiltak etter forventet **ROI** (posisjon → CTR → klikk → kroner),
+> oppdager innholdshull, foreslår nye landingssider, interne lenker, schema
+> markup og FAQ, skriver **førsteutkast til innholdsbriefer**, og leverer alt som
+> et **CEO-rettet vekstnotat** i Markdown.
 
 Ingen API-integrasjoner er nødvendig for å komme i gang – agenten leser
 CSV-filer du eksporterer manuelt og legger i en mappe.
@@ -17,9 +20,15 @@ CSV-filer du eksporterer manuelt og legger i en mappe.
 ```
 .
 ├── agents/
-│   └── seo_content_agent.py   # Selve agenten
+│   ├── seo_content_agent.py   # Entrypunkt (orkestrering) – kjør denne
+│   └── seo/                    # Fagbibliotek (enkelt å lese og utvide)
+│       ├── config.py           #   laster config.yaml + stier
+│       ├── datasources.py      #   CSV-lesing + konsoliderte Page/Keyword-modeller
+│       ├── analysis.py         #   søkeintensjon, kommersielt potensial, ROI-modell
+│       ├── strategy.py         #   landingssider, interne lenker, schema, FAQ, briefer
+│       └── report.py           #   bygger CEO-rapporten
 ├── config/
-│   └── config.yaml            # Klinikkinnstillinger og terskelverdier
+│   └── config.yaml            # Klinikk, økonomi (ROI), intensjon, terskler
 ├── data/
 │   ├── input/                 # Legg CSV-eksportene dine her
 │   └── output/                # (reservert for fremtidige mellomresultater)
@@ -29,6 +38,32 @@ CSV-filer du eksporterer manuelt og legger i en mappe.
 ├── requirements.txt
 └── README.md
 ```
+
+### Hva agenten leverer i rapporten
+
+1. **Executive summary** – forretning først: adresserbart årlig potensial, topp 3 anbefalinger.
+2. **Hvor pengene ligger** – sider rangert etter kommersielt potensial.
+3. **Prioritert veikart** – tiltak rangert etter forventet ROI + quick wins for denne uken.
+4. **Innholdshull og nye landingssider** – med estimert oppside.
+5. **Intern lenkeplan** – kilde → mål → ankertekst.
+6. **Schema markup** – per side, tilpasset helseinnhold (E-E-A-T / YMYL).
+7. **FAQ** – bygget fra faktiske spørsmålssøk, sortert på intensjon.
+8. **Innholdsbriefer** – førsteutkast (title tag, H1, disposisjon, FAQ, schema, CTA).
+9. **Konvertering / UX-observasjoner**.
+10. **Krever medisinsk godkjenning** – alt YMYL-innhold flagges.
+11. **Forutsetninger og datagrunnlag** – ROI-antakelsene vises åpent.
+
+### Slik prioriteres tiltak (ROI-modellen)
+
+```
+Forventet posisjon → CTR (bransjekurve) → ekstra klikk → leads → pasienter → kr/år
+Prioritet = (forventet årlig verdi × sikkerhet) / innsats
+```
+
+Verdien per klikk vektes etter **søkeintensjon** (kommersiell > navigasjon >
+informasjon). Alle økonomiske antakelser (verdi per pasient, konverteringsrater,
+eksportperiode) settes i `config/config.yaml` og vises åpent i rapporten slik at
+de kan utfordres. Tallene er **retningsgivende beslutningsstøtte, ikke budsjett**.
 
 ---
 
@@ -109,34 +144,16 @@ MVP-en kjøres manuelt. For automatisk kjøring kan du senere bruke f.eks. cron:
 
 ## Hvordan lese rapporten
 
-Rapporten er Markdown og har alltid disse seksjonene:
+Rapporten (`reports/ÅÅÅÅ-MM-DD-seo-content-report.md`) er skrevet som et
+**vekstnotat til CEO**: den åpner med hvor verdien ligger og hva den er verdt,
+og legger dokumentasjonen (lenkeplan, schema, briefer) etterpå. Seksjonene er
+listet under "Hva agenten leverer i rapporten" lenger oppe.
 
-| Seksjon | Innhold |
-|---|---|
-| **Executive summary** | Kort oppsummering, antall muligheter, mål |
-| **Top 5 opportunities** | De fem høyest prioriterte tiltakene |
-| **SEO observations** | Sider som bør forbedres + søkeordmuligheter |
-| **Content gaps** | Nye artikler/sider vi bør lage |
-| **Conversion / UX observations** | Tekniske/konverteringsmessige funn |
-| **Recommended actions this week** | Quick wins med lav effort, uten godkjenningskrav |
-| **Items requiring human/medical approval** | ⚠️ Muligheter som berører medisinske temaer |
-| **Data limitations** | Hvilke kilder som manglet, og forbehold |
-
-### Slik prioriteres tiltak
-
-Hver mulighet får en **ICE-score**:
-
-```
-score = Impact × Ease × Confidence
-        (1–5)    (6−Effort)  (0–1)
-```
-
-- **Impact** – forventet effekt, skalert etter volum/visninger.
-- **Effort** – hvor mye arbeid (lav effort = høyere score).
-- **Confidence** – hvor sikkert funnet er (observert data > utledede gap).
-
-Muligheter som treffer prioriterte tjenester/byer får et lite løft. Terskelene
-justeres i `config/config.yaml`.
+Les den ovenfra og ned:
+- **Seksjon 1–3** gir beslutningsgrunnlaget (potensial, ROI-veikart, quick wins).
+- **Seksjon 4–8** er de konkrete leveransene å sende til byrå/innholdsteam.
+- **Seksjon 10** er en sjekkliste for fagansvarlig før noe medisinsk publiseres.
+- **Seksjon 11** viser antakelsene bak tallene – gå hit hvis noe ser for høyt ut.
 
 ---
 

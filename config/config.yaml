@@ -67,3 +67,49 @@ terskler:
 
   # Minste søkevolum før et søkeord regnes som en mulighet.
   min_sokevolum: 50
+
+# -----------------------------------------------------------------------------
+# Økonomiske forutsetninger – driver ROI-modellen.
+# Dette er ANTAKELSER. Justér dem så nær virkeligheten som mulig; de vises åpent
+# i rapporten slik at CEO kan utfordre dem.
+# -----------------------------------------------------------------------------
+okonomi:
+  valuta: "NOK"
+  verdi_per_pasient: 45000        # brutto verdi av én pasient/behandlingsløp
+  besok_til_lead_rate: 0.03       # andel av besøk som blir konsultasjonsforespørsel
+  lead_til_pasient_rate: 0.30     # andel forespørsler som blir betalende pasient
+  # Hvor lang periode dekker CSV-eksportene? Brukes til å annualisere effekt.
+  eksport_periode_dager: 28
+
+# -----------------------------------------------------------------------------
+# Søkeintensjon – hvordan agenten vekter kommersiell verdi per klikk.
+# Ord som avslører intensjon. Kan utvides fritt.
+# -----------------------------------------------------------------------------
+intensjon:
+  # Transaksjonelle/kommersielle signaler (høyest verdi per klikk).
+  kommersielle_signaler:
+    - "pris"
+    - "koster"
+    - "bestill"
+    - "book"
+    - "klinikk"
+    - "behandling"
+    - "konsultasjon"
+    - "time"
+    - "nær meg"
+  # Spørsmåls-/informasjonssignaler (topp av trakten, bygger publikum).
+  informasjons_signaler:
+    - "hva"
+    - "hvordan"
+    - "hvorfor"
+    - "hvor lang"
+    - "når"
+    - "kan jeg"
+    - "symptom"
+    - "guide"
+    - "erfaring"
+  # Verdimultiplikator per intensjon (kommersiell = 1.0 referanse).
+  verdi_multiplikator:
+    kommersiell: 1.0
+    informasjon: 0.15
+    navigasjon: 0.40
