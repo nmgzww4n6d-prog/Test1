@@ -1,0 +1,534 @@
+<title>Eierskapskompass</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: to kolonner – registrering + kompass til venstre, logg og mønsterradar til høyre; stables på mobil. */
+:root {
+  --bg: #f4f5f8;
+  --surface: #ffffff;
+  --fg: #1a2130;
+  --muted: #5b6475;
+  --line: #dde1ea;
+  --accent: #0f6b66;
+  --accent-soft: #e2f1ef;
+  --lvl-a: #3a45a3;
+  --lvl-a-soft: #e6e8f7;
+  --lvl-b: #0f6b66;
+  --lvl-b-soft: #e2f1ef;
+  --lvl-c: #9a5a0c;
+  --lvl-c-soft: #f7ecdc;
+  --warn: #a2391c;
+  --warn-soft: #f8e5df;
+  --font-display: "Bricolage Grotesque", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161f; --surface: #1a202c; --fg: #e7eaf1; --muted: #9aa3b5; --line: #2c3442;
+    --accent: #4fc0b6; --accent-soft: #173533;
+    --lvl-a: #9aa5f2; --lvl-a-soft: #252a4d; --lvl-b: #4fc0b6; --lvl-b-soft: #173533;
+    --lvl-c: #e3a65a; --lvl-c-soft: #3a2a14; --warn: #f08b6c; --warn-soft: #3d211a;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161f; --surface: #1a202c; --fg: #e7eaf1; --muted: #9aa3b5; --line: #2c3442;
+  --accent: #4fc0b6; --accent-soft: #173533;
+  --lvl-a: #9aa5f2; --lvl-a-soft: #252a4d; --lvl-b: #4fc0b6; --lvl-b-soft: #173533;
+  --lvl-c: #e3a65a; --lvl-c-soft: #3a2a14; --warn: #f08b6c; --warn-soft: #3d211a;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font-family: var(--font-body); font-size: 15px; line-height: 1.5; margin: 0; }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 20px; padding-block: 28px 56px; }
+header.top { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 12px 24px; margin-bottom: 22px; }
+h1 { font-family: var(--font-display); font-weight: 700; font-size: clamp(1.7rem, 3.4vw, 2.3rem); margin: 0; letter-spacing: -0.01em; }
+.mission { margin: 4px 0 0; color: var(--muted); max-width: 60ch; font-style: italic; }
+.storage { font-family: var(--font-mono); font-size: 0.75rem; color: var(--muted); }
+.grid { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 22px; align-items: start; }
+@media (max-width: 860px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.col { display: grid; gap: 22px; min-width: 0; }
+section.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; min-width: 0; }
+h2 { font-family: var(--font-display); font-weight: 700; font-size: 1.15rem; margin: 0 0 14px; text-wrap: balance; }
+.eyebrow { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600; }
+form { display: grid; gap: 14px; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+label { display: grid; gap: 5px; font-weight: 500; font-size: 0.88rem; }
+input[type=text], select, textarea {
+  font: inherit; color: var(--fg); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 7px; padding: 9px 11px; width: 100%;
+}
+textarea { min-height: 64px; resize: vertical; }
+input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+@media (max-width: 520px) { .choices { grid-template-columns: 1fr; } }
+.choice { position: relative; }
+.choice input { position: absolute; opacity: 0; inset: 0; }
+.choice span { display: block; border: 1px solid var(--line); border-radius: 8px; padding: 9px 11px; cursor: pointer; font-size: 0.88rem; background: var(--bg); height: 100%; }
+.choice span b { display: block; font-weight: 600; }
+.choice span small { color: var(--muted); }
+.choice input:checked + span { border-color: var(--accent); background: var(--accent-soft); }
+.choice input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.check { display: flex; gap: 8px; align-items: center; font-weight: 400; }
+button { font: inherit; font-weight: 600; border-radius: 8px; border: 1px solid transparent; padding: 9px 16px; cursor: pointer; }
+.btn-primary { background: var(--accent); color: var(--surface); }
+.btn-ghost { background: transparent; border-color: var(--line); color: var(--fg); }
+.btn-small { padding: 4px 10px; font-size: 0.8rem; font-weight: 500; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.hint { color: var(--muted); font-size: 0.82rem; }
+
+/* Kompass-panel */
+.compass { display: grid; gap: 14px; }
+.verdict { display: flex; gap: 14px; align-items: start; }
+.lvl { flex: none; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; font-family: var(--font-display); font-weight: 700; font-size: 1.3rem; }
+.lvl.A { background: var(--lvl-a-soft); color: var(--lvl-a); }
+.lvl.B { background: var(--lvl-b-soft); color: var(--lvl-b); }
+.lvl.C { background: var(--lvl-c-soft); color: var(--lvl-c); }
+.lvl.X { background: var(--line); color: var(--muted); }
+.verdict h3 { margin: 0; font-family: var(--font-display); font-size: 1.05rem; }
+.verdict p { margin: 2px 0 0; color: var(--muted); }
+.questions { margin: 0; padding-left: 1.2em; display: grid; gap: 4px; }
+.draft { background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; white-space: pre-wrap; font-size: 0.9rem; min-width: 0; overflow-wrap: anywhere; }
+.flag { border-radius: 8px; padding: 10px 12px; font-size: 0.88rem; background: var(--warn-soft); color: var(--warn); }
+.flag.calm { background: var(--accent-soft); color: var(--accent); }
+
+/* Logg */
+.filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
+.filters button { padding: 4px 11px; font-weight: 500; font-size: 0.82rem; background: transparent; border: 1px solid var(--line); color: var(--muted); }
+.filters button[aria-pressed="true"] { background: var(--fg); color: var(--surface); border-color: var(--fg); }
+ul.log { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+ul.log li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 4px 12px; padding: 12px 0; border-top: 1px solid var(--line); align-items: start; }
+ul.log li:first-child { border-top: 0; }
+.dot { width: 28px; height: 28px; font-size: 0.85rem; }
+.item-title { font-weight: 600; overflow-wrap: anywhere; }
+.meta { color: var(--muted); font-size: 0.8rem; display: flex; flex-wrap: wrap; gap: 4px 10px; }
+.pill { font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; background: var(--line); color: var(--fg); white-space: nowrap; }
+.pill.selv { background: var(--lvl-c-soft); color: var(--lvl-c); }
+.pill.gjentas { background: var(--warn-soft); color: var(--warn); }
+.item-actions { display: flex; flex-direction: column; gap: 4px; align-items: end; }
+.item-actions select { padding: 3px 6px; font-size: 0.8rem; width: auto; }
+.empty { color: var(--muted); font-size: 0.9rem; }
+.example { opacity: 0.75; }
+.example-tag { font-family: var(--font-mono); font-size: 0.7rem; color: var(--muted); }
+
+/* Mønsterradar */
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-bottom: 16px; }
+.stat { border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+.stat .num { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.stat .lbl { font-size: 0.78rem; color: var(--muted); }
+.bars { display: grid; gap: 8px; }
+.bar { display: grid; grid-template-columns: minmax(0, 11rem) minmax(0, 1fr) 2.2rem; gap: 10px; align-items: center; font-size: 0.85rem; }
+.bar .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar .track { height: 10px; background: var(--bg); border-radius: 5px; overflow: hidden; }
+.bar .fill { height: 100%; border-radius: 5px; }
+.bar .fill.A { background: var(--lvl-a); } .bar .fill.B { background: var(--lvl-b); } .bar .fill.C { background: var(--lvl-c); }
+.bar .n { font-family: var(--font-mono); text-align: right; font-variant-numeric: tabular-nums; }
+.signals { display: grid; gap: 8px; margin-top: 14px; }
+@media (prefers-reduced-motion: no-preference) { .bar .fill { transition: width .4s ease; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">CEO-verktøy · Medicus</div>
+      <h1>Eierskapskompass</h1>
+      <p class="mission">«Min viktigste jobb er å sikre at riktige ting blir viktigst – og at riktige mennesker eier dem.»</p>
+    </div>
+    <div class="storage" id="storage">Kobler til lagring …</div>
+  </header>
+
+  <div class="grid">
+    <div class="col">
+      <section class="panel" aria-labelledby="h-ny">
+        <h2 id="h-ny">Ny sak på bordet</h2>
+        <form id="form" autocomplete="off">
+          <label>Hva gjelder det?
+            <input type="text" id="f-tittel" required maxlength="140" placeholder="F.eks. «Lønnskrav fra embryolog i Trondheim»">
+          </label>
+          <div class="row2">
+            <label>Hvem kom med den?
+              <input type="text" id="f-fra" maxlength="80" placeholder="Navn eller rolle">
+            </label>
+            <label>Område
+              <select id="f-omrade" required></select>
+            </label>
+          </div>
+          <fieldset style="border:0;padding:0;margin:0;display:grid;gap:6px">
+            <legend class="eyebrow" style="margin-bottom:6px">Hva gjør jeg med den?</legend>
+            <div class="choices" id="f-handling">
+              <label class="choice"><input type="radio" name="handling" value="eier" id="h-eier"><span><b>Eier selv</b><small>Min beslutning</small></span></label>
+              <label class="choice"><input type="radio" name="handling" value="retning" id="h-retning"><span><b>Setter retning</b><small>Rammer + navngitt eier</small></span></label>
+              <label class="choice"><input type="radio" name="handling" value="delegert" id="h-delegert"><span><b>Rydder eierskap</b><small>Sender til rett eier</small></span></label>
+              <label class="choice"><input type="radio" name="handling" value="selv" id="h-selv"><span><b>Tar den selv nå</b><small>Bevisst operativt unntak</small></span></label>
+            </div>
+          </fieldset>
+          <div class="row2">
+            <label>Hvem bør eie den?
+              <input type="text" id="f-eier" maxlength="80" placeholder="Navn eller rolle">
+            </label>
+            <label class="check" style="align-self:end;padding-bottom:10px"><input type="checkbox" id="f-gjentas"> Har dette skjedd før?</label>
+          </div>
+          <label>Notat (valgfritt)
+            <textarea id="f-notat" maxlength="1000" placeholder="Kontekst, frist, hva du vil se tilbake"></textarea>
+          </label>
+          <div class="actions">
+            <button type="submit" class="btn-primary" id="btn-lagre">Logg saken</button>
+            <span class="hint" id="form-msg" role="status"></span>
+          </div>
+        </form>
+      </section>
+
+      <section class="panel" aria-labelledby="h-kompass">
+        <h2 id="h-kompass">Kompasset</h2>
+        <div class="compass" id="compass"></div>
+      </section>
+    </div>
+
+    <div class="col">
+      <section class="panel" aria-labelledby="h-radar">
+        <h2 id="h-radar">Mønsterradar <span class="hint" style="font-weight:400;font-family:var(--font-body)">siste 30 dager</span></h2>
+        <div id="radar"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="h-logg">
+        <h2 id="h-logg">Sakslogg</h2>
+        <div class="filters" id="filters" role="group" aria-label="Filtrer saker">
+          <button type="button" data-f="apen" aria-pressed="true">Åpne</button>
+          <button type="button" data-f="alle" aria-pressed="false">Alle</button>
+          <button type="button" data-f="selv" aria-pressed="false">Tatt selv</button>
+          <button type="button" data-f="gjentas" aria-pressed="false">Gjentakende</button>
+        </div>
+        <ul class="log" id="log"></ul>
+      </section>
+
+      <section class="panel" aria-labelledby="h-uke">
+        <h2 id="h-uke">Ukesrefleksjon</h2>
+        <p class="hint" style="margin-top:-8px">Kort oppsummering av de siste 7 dagene. Lim den inn i notatene dine eller ta den med til en coachingsamtale.</p>
+        <div class="draft" id="uke"></div>
+        <div class="actions" style="margin-top:10px"><button type="button" class="btn-ghost btn-small" id="btn-uke">Kopier</button><span class="hint" id="uke-msg" role="status"></span></div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ---------- Domenemodell: Magnus' tre nivåer av eierskap ----------
+  const OMRADER = [
+    { g: "A · Jeg eier direkte", niva: "A", items: [
+      "Styredialog og styrearbeid", "Ledelse av konsernledelsen", "Design av lederfora",
+      "Strategisk retning", "Organisasjonsstruktur og ansvarslinjer", "Rekruttering av toppledelse",
+      "Kompensasjonsrammer for topproller", "Politisk arbeid og eksterne relasjoner", "Strategisk/kulturell kommunikasjon" ] },
+    { g: "B · Jeg eier strategisk", niva: "B", items: [
+      "Strategisk markedsføring", "B2B-relasjoner og anbud", "Konsernprosjekter",
+      "Nye satsninger og partnerskap", "CEO-perspektiv i fagfora" ] },
+    { g: "C · Skal ikke eies av meg", niva: "C", items: [
+      "Operativ HR", "Individuelle lønnsjusteringer", "Markedsinnhold",
+      "Daglig klinikkdrift", "Trondheim-klinikken (daglig drift)", "Kapasitet og driftsoppfølging", "Pushing av enkeltroller" ] },
+    { g: "Uavklart", niva: "X", items: [ "Annet / vet ikke" ] }
+  ];
+  const NIVA_FOR = {};
+  OMRADER.forEach(g => g.items.forEach(i => NIVA_FOR[i] = g.niva));
+  const ANBEFALT = { A: "eier", B: "retning", C: "delegert", X: null };
+  const HANDLING_TXT = { eier: "Eier selv", retning: "Setter retning", delegert: "Rydder eierskap", selv: "Tatt selv" };
+  const STATUS_TXT = { apen: "Åpen", overlevert: "Overlevert", lukket: "Lukket" };
+
+  const $ = id => document.getElementById(id);
+  const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
+
+  const sel = $("f-omrade");
+  sel.append(new Option("Velg område …", ""));
+  OMRADER.forEach(g => { const og = document.createElement("optgroup"); og.label = g.g; g.items.forEach(i => og.append(new Option(i, i))); sel.append(og); });
+
+  // ---------- Lagring: db (privat per bruker) med localStorage som reserve ----------
+  let saker = [];
+  let store = null;
+  const LS_KEY = "eierskapskompass.saker";
+  const lsRead = () => { try { return JSON.parse(localStorage.getItem(LS_KEY) || "[]"); } catch { return []; } };
+  const lsWrite = list => { try { localStorage.setItem(LS_KEY, JSON.stringify(list)); return true; } catch { return false; } };
+
+  function useLocal(reason) {
+    saker = lsRead();
+    store = {
+      async save(s) { const i = saker.findIndex(x => x.id === s.id); if (i >= 0) saker[i] = s; else saker.unshift(s); lsWrite(saker); render(); },
+      async remove(id) { saker = saker.filter(x => x.id !== id); lsWrite(saker); render(); }
+    };
+    $("storage").textContent = reason;
+    render();
+  }
+
+  async function connect() {
+    const c = window.claude;
+    if (!c || typeof c.use !== "function") return useLocal("Lagres lokalt i denne nettleseren");
+    try {
+      const [db, user] = await Promise.all([c.use("db"), c.use("user")]);
+      const uid = user ? await user.id() : null;
+      if (!db || !uid) return useLocal("Lagres lokalt i denne nettleseren");
+      const col = db.collection("data/users/" + uid);
+      store = {
+        async save(s) { const { id, ...body } = s; await col.doc(id).set(body); },
+        async remove(id) { await col.doc(id).delete(); }
+      };
+      $("storage").textContent = "Lagres privat på kontoen din";
+      col.orderBy("opprettet", "desc").onSnapshot(snap => {
+        saker = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        render();
+      }, () => useLocal("Mistet kobling – lagres lokalt"));
+    } catch { useLocal("Lagres lokalt i denne nettleseren"); }
+  }
+
+  // ---------- Kompass-logikk ----------
+  function formState() {
+    return {
+      tittel: $("f-tittel").value.trim(),
+      fra: $("f-fra").value.trim(),
+      omrade: sel.value,
+      niva: NIVA_FOR[sel.value] || "X",
+      handling: (document.querySelector('input[name=handling]:checked') || {}).value || null,
+      eier: $("f-eier").value.trim(),
+      gjentas: $("f-gjentas").checked,
+      notat: $("f-notat").value.trim()
+    };
+  }
+
+  function guidance(s) {
+    const t = s.tittel ? `«${s.tittel}»` : "denne saken";
+    const eier = s.eier || "[navn]";
+    const g = { niva: s.niva, overskrift: "", undertekst: "", sporsmal: [], melding: "", flagg: [] };
+
+    if (!s.omrade) {
+      g.niva = "X"; g.overskrift = "Velg område for å få kompassretning";
+      g.undertekst = "Kompasset plasserer saken på A-, B- eller C-nivå og foreslår spørsmål og formuleringer.";
+      return g;
+    }
+    if (s.niva === "A") {
+      g.overskrift = "Dette er ditt";
+      g.undertekst = "Ingen andre kan eller bør eie dette. Sett av tid og ta beslutningen eksplisitt.";
+      g.sporsmal = ["Hvilken beslutning må faktisk tas – og innen når?", "Hvem må jeg høre før jeg bestemmer?", "Hvordan og til hvem kommuniserer jeg beslutningen?"];
+    } else if (s.niva === "B") {
+      g.overskrift = "Sett retning – ikke gjør arbeidet";
+      g.undertekst = "Din rolle er å stille spørsmål, sette rammer og sikre navngitt eierskap.";
+      g.sporsmal = ["Hvem eier dette i dag, med navn?", "Hvilke rammer må jeg sette: mål, budsjett, frist?", "Når og hvordan vil jeg se fremdrift uten å gå inn i detaljene?"];
+      g.melding = `Hei ${eier},\n\n${cap(t)} er viktig for oss strategisk, og jeg ønsker at du eier den.\n\nRammene fra meg:\n– Mål: [hva skal være oppnådd]\n– Frist: [dato]\n– Avklar med meg: [hvilke beslutninger du trenger fra meg]\n\nKan du komme tilbake med et kort forslag til plan innen [dato]?\n\nMagnus`;
+    } else if (s.niva === "C") {
+      g.overskrift = "Rydd eierskap – ikke oppgaven";
+      g.undertekst = "Dette skal ligge hos noen andre. Oppgaven din er å sørge for at det er tydelig hvem.";
+      g.sporsmal = ["Hvem eier dette egentlig?", "Hvorfor havnet det hos meg – hva mangler i strukturen?", "Hva er den minste avklaringen som gjør at det ikke kommer tilbake?"];
+      g.melding = `Hei ${eier},\n\n${s.fra ? s.fra + " har tatt kontakt med meg om" : "Jeg har fått en henvendelse om"} ${t}. Dette ligger hos deg, og jeg ønsker at du tar eierskap til den.\n\nJeg kommer ikke til å følge opp detaljene, men si fra hvis den viser seg å være prinsipiell eller trenger en beslutning fra meg.\n\nMagnus`;
+    } else {
+      g.overskrift = "Uavklart eierskap";
+      g.undertekst = "Ingen naturlig eier ennå. Det er et signal i seg selv.";
+      g.sporsmal = ["Hvilket område ligger dette nærmest?", "Hvem i ledergruppen er best plassert til å eie det?", "Bør dette inn i ansvarskartet vårt?"];
+    }
+
+    if (s.handling === "selv" && s.niva !== "A") {
+      g.flagg.push({ calm: true, tekst: "Greit å ta denne selv. Den logges som operativt unntak, så du ser omfanget over tid." });
+      if (s.niva === "C") g.melding = "";
+    } else if (s.handling && ANBEFALT[s.niva] && s.handling !== ANBEFALT[s.niva] && s.handling !== "selv") {
+      g.flagg.push({ calm: true, tekst: `Du har valgt «${HANDLING_TXT[s.handling]}». Kompasset ville valgt «${HANDLING_TXT[ANBEFALT[s.niva]]}». Det kan være helt riktig, bare vær bevisst på valget.` });
+    }
+
+    const like = saker.filter(x => x.omrade === s.omrade && dagerSiden(x.opprettet) <= 30).length;
+    if (s.gjentas || like >= 2) {
+      const n = like + 1;
+      g.flagg.push({ calm: false, tekst: `Mønster: ${like >= 2 ? `dette blir sak nr. ${n} innen «${s.omrade}» siste 30 dager` : "du har sett dette før"}. Se på strukturen bak, ikke bare enkeltsaken.` });
+      g.sporsmal.push("Hvilken avklaring i rolle, forum eller rutine ville stoppet hele kategorien?");
+      if (g.melding) g.melding = g.melding.replace("\n\nMagnus", `\n\nDette er ikke første gang denne typen sak kommer til meg. Jeg vil gjerne at vi tar 20 minutter på hvordan vi løser den på systemnivå.\n\nMagnus`);
+    }
+    return g;
+  }
+  const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+  const dagerSiden = iso => (Date.now() - new Date(iso).getTime()) / 864e5;
+
+  function renderCompass() {
+    const s = formState();
+    const g = guidance(s);
+    const box = $("compass"); box.replaceChildren();
+    const v = el("div", "verdict");
+    v.append(el("div", "lvl " + g.niva, g.niva === "X" ? "?" : g.niva));
+    const vt = el("div"); vt.append(el("h3", null, g.overskrift), el("p", null, g.undertekst)); v.append(vt);
+    box.append(v);
+    g.flagg.forEach(f => box.append(el("div", "flag" + (f.calm ? " calm" : ""), f.tekst)));
+    if (g.sporsmal.length) {
+      const w = el("div"); w.append(el("div", "eyebrow", "Spørsmål å stille"));
+      const ol = el("ol", "questions"); g.sporsmal.forEach(q => ol.append(el("li", null, q))); w.append(ol);
+      box.append(w);
+    }
+    if (g.melding) {
+      const w = el("div"); w.style.display = "grid"; w.style.gap = "6px";
+      w.append(el("div", "eyebrow", "Utkast til melding"));
+      const d = el("div", "draft", g.melding); w.append(d);
+      const a = el("div", "actions"); const b = el("button", "btn-ghost btn-small", "Kopier melding"); b.type = "button";
+      const m = el("span", "hint"); m.setAttribute("role", "status");
+      b.addEventListener("click", () => copy(g.melding, d, m)); a.append(b, m); w.append(a);
+      box.append(w);
+    }
+  }
+
+  function copy(text, node, msgEl) {
+    const done = ok => { msgEl.textContent = ok ? "Kopiert" : "Teksten er markert – trykk Ctrl/Cmd+C"; setTimeout(() => msgEl.textContent = "", 2500); };
+    try {
+      navigator.clipboard.writeText(text).then(() => done(true), () => { selectNode(node); done(false); });
+    } catch { selectNode(node); done(false); }
+  }
+  function selectNode(node) { const r = document.createRange(); r.selectNodeContents(node); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
+
+  // ---------- Logg ----------
+  let filter = "apen";
+  $("filters").addEventListener("click", e => {
+    const b = e.target.closest("button[data-f]"); if (!b) return;
+    filter = b.dataset.f;
+    $("filters").querySelectorAll("button").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+    renderLog();
+  });
+
+  const EKSEMPLER = [
+    { tittel: "Klinikksjef i Trondheim ber meg avgjøre vaktplan", omrade: "Trondheim-klinikken (daglig drift)", niva: "C", handling: "delegert", eier: "Driftsleder", status: "overlevert", gjentas: true },
+    { tittel: "Styremøte: strategi for ny klinikk", omrade: "Styredialog og styrearbeid", niva: "A", handling: "eier", eier: "", status: "apen" },
+    { tittel: "Anbud fra offentlig helseforetak", omrade: "B2B-relasjoner og anbud", niva: "B", handling: "retning", eier: "Kommersiell leder", status: "apen" }
+  ];
+
+  function itemNode(s, example) {
+    const li = el("li", example ? "example" : null);
+    li.append(el("div", "lvl dot " + (s.niva || "X"), s.niva === "X" ? "?" : s.niva));
+    const mid = el("div"); mid.style.minWidth = "0";
+    mid.append(el("div", "item-title", s.tittel));
+    const meta = el("div", "meta");
+    meta.append(el("span", null, s.omrade));
+    if (s.eier) meta.append(el("span", null, "→ " + s.eier));
+    if (s.handling) meta.append(el("span", "pill" + (s.handling === "selv" ? " selv" : ""), HANDLING_TXT[s.handling]));
+    if (s.gjentas) meta.append(el("span", "pill gjentas", "Gjentas"));
+    if (example) meta.append(el("span", "example-tag", "EKSEMPEL"));
+    else meta.append(el("span", null, new Date(s.opprettet).toLocaleDateString("nb-NO", { day: "numeric", month: "short" })));
+    mid.append(meta);
+    if (s.notat) { const n = el("div", "meta", s.notat); n.style.marginTop = "2px"; mid.append(n); }
+    li.append(mid);
+    const act = el("div", "item-actions");
+    if (example) { act.append(el("span", "pill", STATUS_TXT[s.status])); }
+    else {
+      const st = document.createElement("select"); st.id = "st-" + s.id; st.setAttribute("aria-label", "Status for " + s.tittel);
+      Object.entries(STATUS_TXT).forEach(([k, v]) => st.append(new Option(v, k, false, s.status === k)));
+      st.addEventListener("change", () => store.save({ ...s, status: st.value }).catch(feil));
+      const del = el("button", "btn-ghost btn-small", "Slett"); del.type = "button";
+      del.addEventListener("click", () => {
+        if (del.dataset.confirm) { store.remove(s.id).catch(feil); }
+        else { del.dataset.confirm = "1"; del.textContent = "Bekreft sletting"; setTimeout(() => { del.textContent = "Slett"; delete del.dataset.confirm; }, 3000); }
+      });
+      act.append(st, del);
+    }
+    li.append(act);
+    return li;
+  }
+
+  function renderLog() {
+    const ul = $("log"); ul.replaceChildren();
+    if (!saker.length) {
+      const p = el("li"); p.style.display = "block";
+      p.append(el("p", "empty", "Ingen saker logget ennå. Slik ser loggen ut når du har lagt inn noen:"));
+      ul.append(p);
+      EKSEMPLER.forEach(s => ul.append(itemNode(s, true)));
+      return;
+    }
+    const list = saker.filter(s =>
+      filter === "alle" ? true :
+      filter === "apen" ? s.status === "apen" :
+      filter === "selv" ? s.handling === "selv" :
+      filter === "gjentas" ? s.gjentas : true);
+    if (!list.length) { const p = el("li", null); p.style.display = "block"; p.append(el("p", "empty", "Ingen saker i dette filteret.")); ul.append(p); return; }
+    list.forEach(s => ul.append(itemNode(s, false)));
+  }
+
+  // ---------- Mønsterradar ----------
+  function renderRadar() {
+    const box = $("radar"); box.replaceChildren();
+    const siste = saker.filter(s => dagerSiden(s.opprettet) <= 30);
+    const stats = el("div", "stats");
+    const andel = (n) => siste.length ? Math.round(100 * n / siste.length) : 0;
+    const cSaker = siste.filter(s => s.niva === "C").length;
+    const selv = siste.filter(s => s.handling === "selv").length;
+    [[siste.length, "saker logget"], [andel(cSaker) + " %", "C-saker som nådde deg"], [selv, "operative unntak"]].forEach(([n, l]) => {
+      const d = el("div", "stat"); d.append(el("div", "num", String(n)), el("div", "lbl", l)); stats.append(d);
+    });
+    box.append(stats);
+
+    if (!siste.length) { box.append(el("p", "empty", "Radaren viser hvilke områder som trekker deg inn, og varsler når samme type sak dukker opp flere ganger.")); return; }
+
+    const tell = {};
+    siste.forEach(s => { tell[s.omrade] = tell[s.omrade] || { n: 0, niva: s.niva }; tell[s.omrade].n++; });
+    const rader = Object.entries(tell).sort((a, b) => b[1].n - a[1].n).slice(0, 7);
+    const max = rader[0][1].n;
+    const bars = el("div", "bars");
+    rader.forEach(([navn, { n, niva }]) => {
+      const r = el("div", "bar"); const nm = el("div", "name", navn); nm.title = navn;
+      const tr = el("div", "track"); const f = el("div", "fill " + niva); f.style.width = (100 * n / max) + "%"; tr.append(f);
+      r.append(nm, tr, el("div", "n", String(n))); bars.append(r);
+    });
+    box.append(bars);
+
+    const sig = el("div", "signals");
+    rader.filter(([, v]) => v.n >= 3 && v.niva !== "A").forEach(([navn, v]) =>
+      sig.append(el("div", "flag", `«${navn}» har kommet til deg ${v.n} ganger. Hvem eier dette, og hva i strukturen sender det oppover?`)));
+    if (selv >= 4) sig.append(el("div", "flag calm", `${selv} operative unntak siste 30 dager. Helt greit når det trengs. Vurder om noen av dem burde hatt en fast eier.`));
+    const uavklart = siste.filter(s => s.niva === "X").length;
+    if (uavklart >= 2) sig.append(el("div", "flag", `${uavklart} saker uten naturlig eier. Kandidat til en runde på ansvarskartet i konsernledelsen.`));
+    if (sig.childElementCount) box.append(sig);
+  }
+
+  // ---------- Ukesrefleksjon ----------
+  function ukeTekst() {
+    const uke = saker.filter(s => dagerSiden(s.opprettet) <= 7);
+    if (!uke.length) return "Ingen saker logget siste 7 dager.";
+    const per = n => uke.filter(s => s.niva === n).length;
+    const linjer = [
+      `Ukesrefleksjon – ${new Date().toLocaleDateString("nb-NO", { day: "numeric", month: "long", year: "numeric" })}`,
+      "",
+      `${uke.length} saker kom til meg: ${per("A")} A (mine), ${per("B")} B (strategisk), ${per("C")} C (andres), ${per("X")} uavklart.`,
+      `Operative unntak: ${uke.filter(s => s.handling === "selv").length}. Gjentakende: ${uke.filter(s => s.gjentas).length}.`,
+      ""
+    ];
+    const c = uke.filter(s => s.niva === "C" || s.niva === "X");
+    if (c.length) { linjer.push("Saker som burde eies av andre:"); c.forEach(s => linjer.push(`– ${s.tittel}${s.eier ? " → " + s.eier : " (ingen eier satt)"}`)); linjer.push(""); }
+    linjer.push("Spørsmål til meg selv:", "– Hvilket mønster ser jeg, og hvem bør eie det?", "– Hva skal jeg si nei til neste uke?", "– Hvilken avklaring i strukturen ville spart meg mest tid?");
+    return linjer.join("\n");
+  }
+  $("btn-uke").addEventListener("click", () => copy($("uke").textContent, $("uke"), $("uke-msg")));
+
+  function render() { renderLog(); renderRadar(); renderCompass(); $("uke").textContent = ukeTekst(); }
+
+  // ---------- Skjema ----------
+  sel.addEventListener("change", () => {
+    const anbefalt = ANBEFALT[NIVA_FOR[sel.value]];
+    const valgt = document.querySelector('input[name=handling]:checked');
+    if (anbefalt && (!valgt || !valgt.dataset.manual)) { const r = $("h-" + anbefalt); r.checked = true; delete r.dataset.manual; }
+    renderCompass();
+  });
+  document.querySelectorAll('input[name=handling]').forEach(r => r.addEventListener("change", () => { document.querySelectorAll('input[name=handling]').forEach(x => delete x.dataset.manual); r.dataset.manual = "1"; renderCompass(); }));
+  ["f-tittel", "f-fra", "f-eier", "f-gjentas"].forEach(id => $(id).addEventListener("input", renderCompass));
+
+  function feil() { $("form-msg").textContent = "Kunne ikke lagre. Sjekk tilkoblingen og prøv igjen."; }
+
+  $("form").addEventListener("submit", async e => {
+    e.preventDefault();
+    const s = formState();
+    if (!s.tittel || !s.omrade) { $("form-msg").textContent = "Fyll inn hva saken gjelder og velg område."; return; }
+    if (!store) { $("form-msg").textContent = "Lagringen er ikke klar ennå. Vent et øyeblikk."; return; }
+    const sak = { id: "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), ...s,
+      handling: s.handling || ANBEFALT[s.niva] || "delegert", status: "apen", opprettet: new Date().toISOString() };
+    $("btn-lagre").disabled = true;
+    try {
+      await store.save(sak);
+      $("form").reset(); document.querySelectorAll('input[name=handling]').forEach(x => delete x.dataset.manual);
+      $("form-msg").textContent = "Logget.";
+      setTimeout(() => $("form-msg").textContent = "", 2500);
+      render();
+    } catch { feil(); }
+    finally { $("btn-lagre").disabled = false; }
+  });
+
+  render();
+  connect();
+})();
+</script>
